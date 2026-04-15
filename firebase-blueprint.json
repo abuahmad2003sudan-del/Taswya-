@@ -1,0 +1,120 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user information and roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "mediator", "client"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "name", "role"]
+    },
+    "Dispute": {
+      "title": "Dispute",
+      "description": "Represents a rental dispute case.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicant": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "role": { "type": "string", "enum": ["owner", "tenant"] }
+          }
+        },
+        "secondParty": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "email": { "type": "string", "format": "email" }
+          }
+        },
+        "details": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["price_increase", "eviction", "maintenance", "payment_delay", "other"] },
+            "description": { "type": "string" },
+            "monthlyRent": { "type": "number" },
+            "address": { "type": "string" },
+            "documentUrl": { "type": "string" }
+          }
+        },
+        "status": { "type": "string", "enum": ["pending_payment", "under_review", "resolved", "closed"] },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "paid"] },
+        "mediatorId": { "type": "string" },
+        "decision": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "fileUrl": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "applicant", "details", "status", "paymentStatus", "createdAt"]
+    }
+    "Mediator": {
+      "title": "Mediator",
+      "description": "Stores professional details and performance metrics for mediators.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "specialization": { "type": "string" },
+        "experience": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "rating": { "type": "number" },
+        "totalCasesResolved": { "type": "number" },
+        "monthlyCases": { "type": "number" },
+        "loyaltyPoints": { "type": "number" },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "referralCount": { "type": "number" },
+        "referralBonus": { "type": "number" },
+        "badges": { "type": "array", "items": { "type": "string" } },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "MediatorLead": {
+      "title": "Mediator Lead",
+      "description": "Prospective mediators interested in joining.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "experience": { "type": "string" },
+        "city": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    },
+    "/disputes/{disputeId}": {
+      "schema": "Dispute",
+      "description": "Dispute cases"
+    },
+    "/mediators/{uid}": {
+      "schema": "Mediator",
+      "description": "Mediator performance and referral data"
+    },
+    "/leads_mediators/{leadId}": {
+      "schema": "MediatorLead",
+      "description": "Prospective mediator leads"
+    }
+  }
+}

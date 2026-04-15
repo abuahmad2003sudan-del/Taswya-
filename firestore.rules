@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - role: string (required) ['admin', 'mediator', 'client']
+    //
+    // Collection: disputes
+    // Fields:
+    //   - id: string (required) - Custom readable ID
+    //   - applicant: map (required) { email, name, phone, role }
+    //   - details: map (required) { type, address, rentAmount, description }
+    //   - secondParty: map (required) { name, phone }
+    //   - status: string (required) ['pending_payment', 'under_review', 'resolved', 'closed', 'payment_failed', 'cancelled']
+    //   - paymentStatus: string (required)
+    //   - mediatorId: string (optional) - UID of the assigned mediator
+    //   - applicantUid: string (required) - UID of the creator
+    //
+    // Collection: mediator_applications
+    // Fields:
+    //   - uid: string (required)
+    //   - status: string (required) ['pending_review', 'approved', 'rejected']
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (getUserData().role == 'admin' || 
+         (request.auth.token.email == "abuahmad.2003sudan@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isMediator() {
+      return isAuthenticated() && getUserData().role == 'mediator';
+    }
+
+    function isDocOwner(docData) {
+      return isAuthenticated() && request.auth.uid == docData.applicantUid;
+    }
+
+    function isAssignedMediator(docData) {
+      return isAuthenticated() && request.auth.uid == docData.mediatorId;
+    }
+
+    // Validation Helpers
+    function isValidDispute(data) {
+      return data.keys().hasAll(['id', 'applicant', 'details', 'status', 'applicantUid']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.status in ['pending_payment', 'under_review', 'resolved', 'closed', 'payment_failed', 'cancelled'] &&
+             data.applicantUid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.role in ['client', 'mediator'] && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role);
+      allow delete: if isAdmin();
+    }
+
+    // Disputes Collection
+    match /disputes/{disputeId} {
+      allow read: if isAdmin() || isDocOwner(resource.data) || isAssignedMediator(resource.data);
+      
+      allow create: if isAuthenticated() && isValidDispute(request.resource.data);
+      
+      allow update: if isAdmin() || 
+                    (isAssignedMediator(resource.data) && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'lastUpdated'])) ||
+                    (isDocOwner(resource.data) && 
+                     resource.data.status == 'pending_payment' &&
+                     request.resource.data.status == resource.data.status);
+      
+      allow delete: if isAdmin();
+    }
+
+    // Mediator Applications
+    match /mediator_applications/{appId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.uid);
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Mediators Collection
+    match /mediators/{mediatorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Webhook Collections (Admin Only)
+    match /webhook_logs/{logId} {
+      allow read, write: if isAdmin();
+    }
+    match /webhook_locks/{lockId} {
+      allow read, write: if isAdmin();
+    }
+    match /webhook_failures/{failId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default Deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

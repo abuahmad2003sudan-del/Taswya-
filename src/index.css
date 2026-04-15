@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-display: "Montserrat", sans-serif;
+  --font-arabic: "Cairo", sans-serif;
+  --font-tajawal: "Tajawal", sans-serif;
+
+  --color-background: #F5F7FA;
+  --color-foreground: #0A1929;
+  
+  --color-primary: #0A1929;
+  --color-primary-foreground: #F5F7FA;
+  
+  --color-secondary: oklch(0.92 0.02 60);
+  --color-secondary-foreground: #0A1929;
+  
+  --color-accent: #B87333;
+  --color-accent-foreground: #FFFFFF;
+  
+  --color-border: oklch(0.9 0.01 60);
+  --color-input: oklch(0.9 0.01 60);
+  --color-ring: oklch(0.75 0.12 75);
+
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 3rem;
+  --radius-4xl: 4rem;
+
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-shimmer: shimmer 3s infinite;
+}
+
+.dark {
+  --color-background: #0A1929;
+  --color-foreground: #F5F7FA;
+  
+  --color-primary: #F5F7FA;
+  --color-primary-foreground: #0A1929;
+  
+  --color-secondary: #1A2939;
+  --color-secondary-foreground: #F5F7FA;
+  
+  --color-accent: #D4AF37; /* Gold for dark mode */
+  --color-accent-foreground: #0A1929;
+  
+  --color-border: #1A2939;
+  --color-input: #1A2939;
+  --color-ring: #B87333;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-accent/30 selection:text-primary;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+  html {
+    @apply font-sans scroll-smooth overflow-x-hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight text-primary;
+  }
+}
+
+@layer components {
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .glass-panel {
+    @apply bg-white/40 backdrop-blur-2xl border border-white/20 shadow-2xl;
+  }
+  
+  .imperial-card {
+    @apply bg-white dark:bg-stone-900 border border-stone-200/60 dark:border-stone-800 shadow-2xl shadow-stone-200/50 dark:shadow-black/20 rounded-2xl sm:rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-stone-300/60 dark:hover:shadow-black/40 hover:-translate-y-1;
+  }
+
+  .imperial-button {
+    @apply relative overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] rounded-full px-6 sm:px-8 py-3 sm:py-4 font-display text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2;
+  }
+
+  .imperial-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-stone-800 shadow-xl shadow-stone-200;
+  }
+
+  .imperial-button-accent {
+    @apply bg-accent text-white hover:brightness-110 shadow-xl shadow-accent/20;
+  }
+
+  .vertical-text {
+    writing-mode: vertical-rl;
+    @apply rotate-180 uppercase tracking-[0.4em] text-[9px] font-black text-stone-400/60;
+  }
+
+  .oval-mask {
+    clip-path: ellipse(50% 50% at 50% 50%);
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-20px) rotate(1deg); }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
